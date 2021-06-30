@@ -10,4 +10,6 @@ public interface AccountDao {
 
     BigDecimal getBalance(String username);
 
+    boolean updateBalance(BigDecimal amount, String username);
+
 }

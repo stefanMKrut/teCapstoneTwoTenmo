@@ -18,6 +18,13 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
+    public boolean updateBalance(BigDecimal amount, String username) {
+        String sql = "UPDATE accounts a SET balance = balance + ? " +
+                "WHERE a.user_id = (SELECT user_id FROM users WHERE username = ?);";
+        return jdbcTemplate.update(sql, amount, username) == 1;
+    }
+
+    @Override
     public Account getAccount(String username) throws UsernameNotFoundException {
         Account account = null;
         String sql = "SELECT account_id, user_id, balance FROM accounts a " +
