@@ -50,7 +50,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		mainMenu();
 	}
 
-	private void mainMenu() throws AuthenticationServiceException {
+	private void mainMenu() {
 		while(true) {
 			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
@@ -72,7 +72,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		}
 	}
 
-	private void viewCurrentBalance() throws AuthenticationServiceException {
+	private void viewCurrentBalance(){
 		System.out.println("Your current account balance is: $" + accountService.getBalance());
 	}
 

@@ -21,13 +21,9 @@ public class AccountService {
         this.BASE_URL = url + "/account";
     }
 
-    public BigDecimal getBalance() throws AuthenticationServiceException {
+    public BigDecimal getBalance(){
         Account account = null;
-        try {
-            account = restTemplate.exchange(BASE_URL + "", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
-        } catch (RestClientResponseException ex) {
-            throw new AuthenticationServiceException(ex.getRawStatusCode() + " : " + ex.getResponseBodyAsString());
-        }
+        account = restTemplate.exchange(BASE_URL + "", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
         if (account != null) {
             return account.getBalance();
         } else {
