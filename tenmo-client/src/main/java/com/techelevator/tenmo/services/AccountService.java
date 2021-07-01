@@ -21,14 +21,20 @@ public class AccountService {
         this.BASE_URL = url + "/account";
     }
 
-    public BigDecimal getBalance(){
+    public Account getAccount(){
         Account account = null;
         account = restTemplate.exchange(BASE_URL + "", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
         if (account != null) {
-            return account.getBalance();
+            return account;
         } else {
             return null;
         }
+    }
+
+    public long getAccountId(String userId){
+        Account account = null;
+        account = restTemplate.exchange(BASE_URL + "/" + userId, HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
+        return account.getAccountId();
     }
 
 

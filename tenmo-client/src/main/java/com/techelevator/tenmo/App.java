@@ -1,13 +1,7 @@
 package com.techelevator.tenmo;
 
-import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.AuthenticatedUser;
-import com.techelevator.tenmo.model.User;
-import com.techelevator.tenmo.model.UserCredentials;
-import com.techelevator.tenmo.services.AccountService;
-import com.techelevator.tenmo.services.AuthenticationService;
-import com.techelevator.tenmo.services.AuthenticationServiceException;
-import com.techelevator.tenmo.services.TransferService;
+import com.techelevator.tenmo.model.*;
+import com.techelevator.tenmo.services.*;
 import com.techelevator.view.ConsoleService;
 
 public class App {
@@ -31,17 +25,19 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticationService authenticationService;
     private AccountService accountService;
     private TransferService transferService;
+    private UserService userService;
 
     public static void main(String[] args) {
-    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountService(API_BASE_URL), new TransferService(API_BASE_URL));
+    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountService(API_BASE_URL), new TransferService(API_BASE_URL), new UserService(API_BASE_URL));
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService, AccountService accountService, TransferService transferService) {
+    public App(ConsoleService console, AuthenticationService authenticationService, AccountService accountService, TransferService transferService, UserService userService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
 		this.accountService = accountService;
 		this.transferService = transferService;
+		this.userService = userService;
 	}
 
 	public void run() {
@@ -63,7 +59,36 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 			} else if(MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS.equals(choice)) {
 				viewPendingRequests();
 			} else if(MAIN_MENU_OPTION_SEND_BUCKS.equals(choice)) {
-				sendBucks();
+				System.out.println("Please select a user from this list:\n" +
+				"-------------------------------------------\n" +
+				"User ID | Username\n" +
+				"-------------------------------------------\n");
+				User[] users = userService.listAllUsers();
+				for (User user : users) {
+					System.out.println(user.getId() + "    | " + user.getUsername());
+				}
+				String userTo = "";
+				while (userTo.equals("")) {
+					userTo = console.getUserInput("Enter ID of user you are sending to (0 to cancel)");
+				}
+				if (userTo.equals("0")) {
+					continue;
+				}
+				String amountString = "";
+				while (amountString.equals("")) {
+					amountString = console.getUserInput("Enter amount");
+				}
+				double amount = Double.parseDouble(amountString);
+				System.out.println("Checking the balance in account...");
+				double amountInAccount = accountService.getAccount().getBalance();
+				if (amount > amountInAccount) {
+					System.out.println("Sorry, not enough funds. Exiting send menu.");
+					continue;
+				}
+				System.out.println("Getting user's accountId...");
+				long userFrom = accountService.getAccount().getAccountId();
+				System.out.println("user's account id is: " + userFrom);
+				sendBucks(userTo, (int)userFrom, amount);
 			} else if(MAIN_MENU_OPTION_REQUEST_BUCKS.equals(choice)) {
 				requestBucks();
 			} else if(MAIN_MENU_OPTION_LOGIN.equals(choice)) {
@@ -76,17 +101,19 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance(){
-		System.out.println("Your current account balance is: $" + accountService.getBalance());
+		System.out.println("Your current account balance is: $" + accountService.getAccount().getBalance());
 	}
 
 	private void viewTransferHistory() {
 		System.out.println("-------------------------------------------\n" +
-				"Transfers\n" +
-				"ID          From/To                 Amount\n" +
+				"Transfer  |                 |\n" +
+				"ID        | From/To         | Amount\n" +
 				"-------------------------------------------");
-
-		// TODO Auto-generated method stub
-		
+		Transfer[] transfers = transferService.listTransfers();
+		for (Transfer transfer : transfers) {
+			System.out.println(transfer.getTransferId() + "\t\t To: " + transfer.getAccountTo() + "\t\t $" + transfer.getAmount());
+		}
+		System.out.println("-------------------------------------------");
 	}
 
 	private void viewPendingRequests() {
@@ -94,9 +121,15 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		
 	}
 
-	private void sendBucks() {
-		// TODO Auto-generated method stub
-		
+	private void sendBucks(String userTo, int userFrom, double amount) {
+		Transfer transfer = new Transfer();
+		transfer.setAccountTo((int) accountService.getAccountId(userTo));
+		transfer.setAccountFrom(userFrom);
+		transfer.setAmount(amount);
+		transfer.setTransferStatusId(2);
+		transfer.setTransferTypeId(2);
+		transferService.send(transfer);
+		System.out.println("Successfully sent your money!");
 	}
 
 	private void requestBucks() {
@@ -154,6 +187,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 				String token = (String) currentUser.getToken();
 				accountService.AUTH_TOKEN = token;
 				transferService.AUTH_TOKEN = token;
+				userService.AUTH_TOKEN = token;
 			} catch (AuthenticationServiceException e) {
 				System.out.println("LOGIN ERROR: "+e.getMessage());
 				System.out.println("Please attempt to login again.");

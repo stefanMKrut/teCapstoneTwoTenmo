@@ -29,14 +29,15 @@ public class AccountController {
         return accountDao.getAccount(principal.getName());
     }
 
+    @RequestMapping(path = "/{userId}", method = RequestMethod.GET)
+    public Account getAccountFromUserId(@PathVariable int userId){
+        return accountDao.getAccountFromUserId(userId);
+    }
+
     @RequestMapping(path = "/balance", method = RequestMethod.GET)
     public BigDecimal getBalance(Principal principal){
         return accountDao.getBalance(principal.getName());
     }
 
-    @RequestMapping(path = "/send/{userId}", method = RequestMethod.PUT)
-    public boolean updateBalance(@Valid @RequestBody BigDecimal amount, @PathVariable int userId) {
-        return accountDao.updateBalance(amount, userId);
-    }
 
 }

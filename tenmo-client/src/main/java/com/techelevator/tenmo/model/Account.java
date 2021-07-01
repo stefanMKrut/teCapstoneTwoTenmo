@@ -6,13 +6,13 @@ public class Account {
 
     private long accountId;
     private long userId;
-    private BigDecimal balance;
+    private double balance;
 
     public Account() {
 
     }
 
-    public Account(long accountId, long userId, BigDecimal balance) {
+    public Account(long accountId, long userId, double balance) {
         this.accountId = accountId;
         this.userId = userId;
         this.balance = balance;
@@ -34,11 +34,11 @@ public class Account {
         this.userId = userId;
     }
 
-    public BigDecimal getBalance() {
+    public double getBalance() {
         return balance;
     }
 
-    public void setBalance(BigDecimal balance) {
+    public void setBalance(double balance) {
         this.balance = balance;
     }
 }
