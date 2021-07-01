@@ -18,10 +18,10 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
-    public boolean updateBalance(BigDecimal amount, String username) {
+    public boolean updateBalance(BigDecimal amount, int userId) {
         String sql = "UPDATE accounts a SET balance = balance + ? " +
-                "WHERE a.user_id = (SELECT user_id FROM users WHERE username = ?);";
-        return jdbcTemplate.update(sql, amount, username) == 1;
+                "WHERE a.user_id = ?;";
+        return jdbcTemplate.update(sql, amount, userId) == 1;
     }
 
     @Override

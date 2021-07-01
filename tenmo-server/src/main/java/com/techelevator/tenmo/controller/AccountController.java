@@ -3,11 +3,9 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.model.Account;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.security.Principal;
 
@@ -36,6 +34,9 @@ public class AccountController {
         return accountDao.getBalance(principal.getName());
     }
 
-
+    @RequestMapping(path = "/send/{userId}", method = RequestMethod.PUT)
+    public boolean updateBalance(@Valid @RequestBody BigDecimal amount, @PathVariable int userId) {
+        return accountDao.updateBalance(amount, userId);
+    }
 
 }
