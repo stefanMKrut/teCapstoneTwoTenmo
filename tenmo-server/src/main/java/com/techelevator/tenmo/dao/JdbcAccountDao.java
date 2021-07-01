@@ -40,6 +40,19 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
+    public Account getAccountFromUserId(int userId) throws UsernameNotFoundException {
+        Account account = null;
+        String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+        if (result.next()) {
+            account = mapRowToAccount(result);
+        } else {
+            throw new UsernameNotFoundException("User " + userId + " not found.");
+        }
+        return account;
+    }
+
+    @Override
     public BigDecimal getBalance(String username) throws UsernameNotFoundException {
         Account account = getAccount(username);
         BigDecimal balance = null;
