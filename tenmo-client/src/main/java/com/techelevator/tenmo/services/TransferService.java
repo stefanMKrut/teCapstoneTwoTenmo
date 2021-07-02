@@ -5,6 +5,7 @@ import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -16,6 +17,12 @@ public class TransferService {
 
     public TransferService(String url) {
         this.BASE_URL = url + "/account/transfer";
+    }
+
+    public Transfer send(Transfer transfer) {
+        Transfer transferSent = null;
+        transferSent = restTemplate.postForObject(BASE_URL, makeTransferEntity(transfer), Transfer.class);
+        return transferSent;
     }
 
     public Transfer[] listTransfers() {
@@ -34,6 +41,14 @@ public class TransferService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(AUTH_TOKEN);
         HttpEntity entity = new HttpEntity<>(headers);
+        return entity;
+    }
+
+    private HttpEntity<Transfer> makeTransferEntity(Transfer transfer) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(AUTH_TOKEN);
+        HttpEntity<Transfer> entity = new HttpEntity<>(transfer, headers);
         return entity;
     }
 
