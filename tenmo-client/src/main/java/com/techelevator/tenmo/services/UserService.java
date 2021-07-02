@@ -23,6 +23,7 @@ public class UserService {
         return users;
     }
 
+
     /**
      * Returns an {HttpEntity} with the `Authorization: Bearer:` header
      *
