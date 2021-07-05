@@ -8,9 +8,13 @@ public interface UserDao {
 
     List<User> findAll();
 
+    List<User> findAllBasicUserInfo();
+
     User findByUsername(String username);
 
     int findIdByUsername(String username);
 
     boolean create(String username, String password);
+
+    String getUsernameByAccountId(int accountId);
 }

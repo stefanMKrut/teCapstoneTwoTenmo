@@ -46,6 +46,18 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
+    public List<User> findAllBasicUserInfo() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT user_id, username FROM users;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        while(results.next()) {
+            User user = mapRowToUserBasic(results);
+            users.add(user);
+        }
+        return users;
+    }
+
+    @Override
     public User findByUsername(String username) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM users WHERE username ILIKE ?;";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
@@ -79,17 +91,14 @@ public class JdbcUserDao implements UserDao {
         return true;
     }
 
-    public User getUserNameByAccountId(String username) {
-        String sql = "SELECT username\n" +
-                "FROM users\n" +
-                "JOIN accounts ON accounts.user_id = users.user_id;\n" +
-                "WHERE account_id = ?;\n ";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
-
-        if (rowSet.next()){
-            return mapRowToUser(rowSet);
-        }
-        return null; //throw exception here?
+    @Override
+    public String getUsernameByAccountId(int accountId) {
+        String sql = "SELECT username " +
+                "FROM users " +
+                "JOIN accounts ON accounts.user_id = users.user_id " +
+                "WHERE account_id = ?;";
+        String username = jdbcTemplate.queryForObject(sql, String.class, accountId);
+        return username;
     }
 
     private User mapRowToUser(SqlRowSet rs) {
@@ -101,4 +110,14 @@ public class JdbcUserDao implements UserDao {
         user.setAuthorities("USER");
         return user;
     }
+
+    private User mapRowToUserBasic(SqlRowSet rs) {
+        User user = new User();
+        user.setId(rs.getLong("user_id"));
+        user.setUsername(rs.getString("username"));
+        user.setActivated(true);
+        user.setAuthorities("USER");
+        return user;
+    }
+
 }
