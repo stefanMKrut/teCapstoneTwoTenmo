@@ -4,6 +4,9 @@ import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.*;
 import com.techelevator.view.ConsoleService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class App {
 
 private static final String API_BASE_URL = "http://localhost:8080/";
@@ -62,33 +65,56 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 				System.out.println("Please select a user from this list:\n" +
 				"-------------------------------------------\n" +
 				"User ID | Username\n" +
-				"-------------------------------------------\n");
+				"-------------------------------------------");
 				User[] users = userService.listAllUsers();
+				List<Integer> userIds = new ArrayList<>();
 				for (User user : users) {
-					System.out.println(user.getId() + "    | " + user.getUsername());
+					if (user.getId() != null && user.getId() != accountService.getAccount().getUserId()) {
+						System.out.println(user.getId() + "    | " + user.getUsername());
+						userIds.add(user.getId());
+					}
 				}
-				String userTo = "";
-				while (userTo.equals("")) {
-					userTo = console.getUserInput("Enter ID of user you are sending to (0 to cancel)");
+
+				Integer userTo = null;
+				while (userTo == null) {
+					try {
+						userTo = Integer.parseInt(console.getUserInput("Enter ID of user you are sending to (0 to cancel)"));
+					} catch (NumberFormatException e) {
+						userTo = null;
+						System.out.println("Sorry, that was not valid, please try again.");
+						continue;
+					}
+					if (!userIds.contains(userTo) && userTo != 0) {
+						System.out.println("That was not a valid userId.");
+						userTo = null;
+					}
 				}
-				if (userTo.equals("0")) {
+				if (userTo == 0) {
 					continue;
 				}
-				String amountString = "";
-				while (amountString.equals("")) {
-					amountString = console.getUserInput("Enter amount");
+				Double amount = null;
+				while (amount == null) {
+					try {
+						amount = Double.parseDouble(console.getUserInput("Enter the amount you wish to send"));
+					} catch (NumberFormatException e) {
+						amount = null;
+						System.out.println("Sorry, that was not valid, please try again.");
+						continue;
+					}
+					if (amount < 0) {
+						System.out.println("You cannot send negative money.");
+						amount = null;
+					}
 				}
-				double amount = Double.parseDouble(amountString);
-				System.out.println("Checking the balance in account...");
+				System.out.println("Checking the balance in your account...");
 				double amountInAccount = accountService.getAccount().getBalance();
 				if (amount > amountInAccount) {
 					System.out.println("Sorry, not enough funds. Exiting send menu.");
 					continue;
 				}
-				System.out.println("Getting user's accountId...");
 				long userFrom = accountService.getAccount().getAccountId();
-				System.out.println("user's account id is: " + userFrom);
 				sendBucks(userTo, (int)userFrom, amount);
+				System.out.println("Successfully sent your money!");
 			} else if(MAIN_MENU_OPTION_REQUEST_BUCKS.equals(choice)) {
 				requestBucks();
 			} else if(MAIN_MENU_OPTION_LOGIN.equals(choice)) {
@@ -111,7 +137,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 				"-------------------------------------------");
 		Transfer[] transfers = transferService.listTransfers();
 		for (Transfer transfer : transfers) {
-			System.out.println(transfer.getTransferId() + "\t\t To: " + transfer.getAccountTo() + "\t\t $" + transfer.getAmount());
+			System.out.println(transfer.getTransferId() + "\t\t To: " + userService.getUsernameByAccountId(transfer.getAccountTo()) + "\t\t $" + transfer.getAmount());
 		}
 		System.out.println("-------------------------------------------");
 	}
@@ -121,7 +147,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		
 	}
 
-	private void sendBucks(String userTo, int userFrom, double amount) {
+	private void sendBucks(int userTo, int userFrom, double amount) {
 		Transfer transfer = new Transfer();
 		transfer.setAccountTo((int) accountService.getAccountId(userTo));
 		transfer.setAccountFrom(userFrom);
@@ -129,7 +155,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		transfer.setTransferStatusId(2);
 		transfer.setTransferTypeId(2);
 		transferService.send(transfer);
-		System.out.println("Successfully sent your money!");
 	}
 
 	private void requestBucks() {

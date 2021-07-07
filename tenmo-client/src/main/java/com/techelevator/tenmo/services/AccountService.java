@@ -31,7 +31,7 @@ public class AccountService {
         }
     }
 
-    public long getAccountId(String userId){
+    public long getAccountId(int userId){
         Account account = null;
         account = restTemplate.exchange(BASE_URL + "/" + userId, HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
         return account.getAccountId();

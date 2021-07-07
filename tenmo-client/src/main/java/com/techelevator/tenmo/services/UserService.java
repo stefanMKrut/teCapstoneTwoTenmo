@@ -23,6 +23,12 @@ public class UserService {
         return users;
     }
 
+    public String getUsernameByAccountId(int accountId) {
+        String username = null;
+        username = restTemplate.exchange(BASE_URL + "/" + accountId, HttpMethod.GET, makeAuthEntity(), String.class).getBody();
+        return username;
+    }
+
 
     /**
      * Returns an {HttpEntity} with the `Authorization: Bearer:` header
